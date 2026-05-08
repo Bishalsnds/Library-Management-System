@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once '../../config.php';
 
 $error = '';
 $success = '';
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($insert->execute()) {
                     $success = 'Account created successfully! Redirecting to login...';
-                    header("refresh:2;url=index.php");
+                    header("refresh:2;url=../../index.php");
                 } else {
                     $error = 'Error creating account: ' . $conn->error;
                 }
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Library Management System</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../../public/assets/css/style.css">
     <style>
         .error-message {
             background-color: #f8d7da;
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-side">
             <div class="side-content">
                 <div class="logo-container">
-                    <img src="logo.png.jpg" alt="Y.R.A.S.B. Logo" class="logo">
+                    <img src="../../public/assets/images/logo.png.jpg" alt="Y.R.A.S.B. Logo" class="logo">
                 </div>
                 <h1>Library System</h1>
                 <p>Create your account to manage books efficiently</p>

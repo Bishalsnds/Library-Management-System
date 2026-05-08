@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Management System - Login</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="public/assets/css/style.css">
     <style>
         .error-message {
             background-color: #f8d7da;
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-side">
             <div class="side-content">
                 <div class="logo-container">
-                    <img src="logo.png.jpg" alt="Y.R.A.S.B. Logo" class="logo">
+                    <img src="public/assets/images/logo.png.jpg" alt="Y.R.A.S.B. Logo" class="logo">
                 </div>
                 <h1>Library System</h1>
                 <p>Manage books efficiently</p>
@@ -146,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </p>
 
                 <p class="login-footer">
-                    Don't have an account? <a href="signup.php">Sign up here</a>
+                    Don't have an account? <a href="src/auth/signup.php">Sign up here</a>
                 </p>
             </div>
         </div>
