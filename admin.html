@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LMS - Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button.active {
+            background: #30688d;
+            color: white;
+            border-bottom-color: #30688d;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-save, .btn-cancel, .btn-delete {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn-save {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #229954;
+        }
+
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .books-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .books-table th, .books-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .books-table th {
+            background: #34495e;
+            color: white;
+        }
+
+        .books-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-edit, .btn-remove {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2980b9;
+        }
+
+        .btn-remove {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-available {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .status-not-available {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+
+        .alert {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+
+        .dashboard-cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .dashboard-card {
+            flex: 1 1 220px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .dashboard-card h3 {
+            margin: 0 0 10px;
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .dashboard-card p {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .dashboard-card.card-total {
+            background: #2c3e50;
+        }
+
+        .dashboard-card.card-categories {
+            background: #8e44ad;
+        }
+
+        .dashboard-card.card-available {
+            background: #27ae60;
+        }
+
+        .dashboard-card.card-unavailable {
+            background: #c0392b;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header admin-header">
+    <div>
+        <h1>Library Management System - Admin Panel</h1>
+    </div>
+</div>
+
+<div class="admin-container">
+    <div class="tabs">
+        <button class="tab-button" onclick="switchTab('dashboard', event)">Dashboard</button>
+        <button class="tab-button active" onclick="switchTab('search', event)">Search Books</button>
+        <button class="tab-button" onclick="switchTab('add', event)">Add Book</button>
+        <button class="tab-button" onclick="switchTab('manage', event)">Manage Books</button>
+    </div>
+
+    <!-- DASHBOARD TAB -->
+    <div id="dashboard" class="tab-content">
+        <h2>Dashboard</h2>
+        <div id="dashboardStats">
+            <p>Use the Dashboard tab to view current system status.</p>
+        </div>
+    </div>
+
+    <!-- SEARCH TAB -->
+    <div id="search" class="tab-content active">
+        <h2>Search Books</h2>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by title or author">
+            <select id="categoryFilter">
+                <option value="">All Categories</option>
+            </select>
+            <button onclick="searchBooks()">Search</button>
+            <button onclick="clearSearch()" style="background: #95a5a6;">Clear</button>
+        </div>
+        <div id="searchResults"></div>
+    </div>
+
+    <!-- ADD BOOK TAB -->
+    <div id="add" class="tab-content">
+        <h2>Add New Book</h2>
+        <div id="addAlert"></div>
+        <div class="form-group">
+            <label for="addTitle">Book Title *</label>
+            <input type="text" id="addTitle" placeholder="Enter book title">
+        </div>
+        <div class="form-group">
+            <label for="addAuthor">Author Name *</label>
+            <input type="text" id="addAuthor" placeholder="Enter author name">
+        </div>
+        <div class="form-group">
+            <label for="addCategory">Category *</label>
+            <input type="text" id="addCategory" placeholder="Enter category (e.g., Fantasy, Programming)">
+        </div>
+        <div class="form-group checkbox-group">
+            <label for="addAvailable">Available</label>
+            <input type="checkbox" id="addAvailable" checked>
+        </div>
+        <div class="form-actions">
+            <button class="btn-save" onclick="addBook()">Add Book</button>
+            <button class="btn-cancel" onclick="clearAddForm()">Clear</button>
+        </div>
+    </div>
+
+    <!-- MANAGE BOOKS TAB -->
+    <div id="manage" class="tab-content">
+        <h2>Manage All Books</h2>
+        <div id="manageAlert"></div>
+        <button class="btn-save" onclick="loadAllBooks()" style="margin-bottom: 20px;">Load All Books</button>
+        <div id="manageBooks"></div>
+    </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>
