@@ -71,6 +71,9 @@ $conn->close();
     <div class="login-container">
         <div class="login-side">
             <div class="side-content">
+                <div class="logo-section">
+                    <img src="../../logo.jpg" alt="Library Management System Logo" class="login-logo">
+                </div>
                 <h1>Library System</h1>
                 <p>Manage books efficiently</p>
                 <ul class="features-list">

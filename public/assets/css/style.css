@@ -41,6 +41,20 @@ body {
     margin-bottom: 15px;
 }
 
+.logo-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.login-logo {
+    width: 140px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3));
+    border-radius: 10px;
+}
+
 .logo-container {
     display: flex;
     justify-content: center;
