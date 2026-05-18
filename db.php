@@ -9,7 +9,7 @@ ini_set('display_errors', 1);
 $host = "127.0.0.1";
 $port = 3306;
 $user = "root"; // default XAMPP/MariaDB user
-$pass = "root"; // default XAMPP/MariaDB password
+$pass = ""; // default XAMPP/MariaDB password (empty)
 $dbname = "library_db";
 
 // Create connection using MySQLi
