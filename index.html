@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Check-in/Check-out System - Static Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            max-width: 170px;
+            height: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .menu-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .menu-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        .menu-card .icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+        }
+        .menu-card:hover .icon {
+            transform: scale(1.2);
+        }
+        .menu-card h2 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+        .menu-card p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .stats {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .stat {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        .stat:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+            transition: color 0.3s;
+        }
+        .stat:hover .stat-number {
+            color: #764ba2;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        .features {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #28a745;
+        }
+        .feature-card h3 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .feature-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-card li {
+            padding: 5px 0;
+            color: #555;
+        }
+        .feature-card li::before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeaa7;
+            text-align: center;
+        }
+        .php-links {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 8px;
+        }
+        .php-links a {
+            display: inline-block;
+            margin: 5px 10px;
+            padding: 10px 15px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .php-links a:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="notice">
+        ⚠️ <strong>STATIC PREVIEW ONLY</strong> - This is a static HTML version for Live Server preview.<br>
+        For full functionality (PHP + Database), use: <code>http://localhost/Library_checkinout/index.php</code>
+    </div>
+
+    <img src="logo.jpg" alt="Library Logo" class="logo">
+    <h1>📚 Library System</h1>
+    <p class="subtitle">Manage Books & Members Efficiently</p>
+
+    <div class="menu-grid">
+        <a href="#" class="menu-card" onclick="showDemo('issue-return')">
+            <div class="icon">📖</div>
+            <h2>Issue & Return Books</h2>
+            <p>Manage book checkouts and returns with fine calculation</p>
+        </a>
+
+        <a href="#" class="menu-card" onclick="showDemo('manage')">
+            <div class="icon">⚙️</div>
+            <h2>Manage Members & Books</h2>
+            <p>Add members and books to library database</p>
+        </a>
+
+        <a href="#" class="menu-card" onclick="showDemo('database')">
+            <div class="icon">🗄️</div>
+            <h2>Database Management</h2>
+            <p>View detailed database records and statistics</p>
+        </a>
+    </div>
+
+    <!-- Features Section -->
+    <div class="features">
+        <div class="feature-card">
+            <h3>📊 Real-time Statistics</h3>
+            <ul>
+                <li>Total books in library</li>
+                <li>Available books count</li>
+                <li>Currently issued books</li>
+                <li>Overdue books alerts</li>
+            </ul>
+        </div>
+        <div class="feature-card">
+            <h3>🔍 Smart Search & Filter</h3>
+            <ul>
+                <li>Search books by title/author</li>
+                <li>Filter by availability</li>
+                <li>Quick member lookup</li>
+                <li>Transaction history</li>
+            </ul>
+        </div>
+        <div class="feature-card">
+            <h3>⚡ Automated Features</h3>
+            <ul>
+                <li>Automatic fine calculation</li>
+                <li>Due date tracking</li>
+                <li>Overdue notifications</li>
+                <li>Inventory management</li>
+            </ul>
+        </div>
+        <div class="feature-card">
+            <h3>🎨 Modern UI/UX</h3>
+            <ul>
+                <li>Responsive design</li>
+                <li>Intuitive navigation</li>
+                <li>Visual status indicators</li>
+                <li>Mobile-friendly interface</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-number">--</div>
+            <div class="stat-label">Total Books</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number">--</div>
+            <div class="stat-label">Active Members</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number">--</div>
+            <div class="stat-label">Books Issued</div>
+        </div>
+    </div>
+
+    <div class="php-links">
+        <strong>🔗 For Full PHP Functionality:</strong><br><br>
+        <a href="http://localhost/Library_checkinout/index.php">🏠 PHP Homepage</a>
+        <a href="http://localhost/Library_checkinout/manage.php">👥 Manage Members & Books</a>
+        <a href="http://localhost/Library_checkinout/checkincheckout.php">📖 Issue & Return Books</a>
+    </div>
+</div>
+
+<script>
+// Add interactivity for the preview
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.menu-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px) scale(1.05)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+
+    // Animate stats on load
+    animateStats();
+});
+
+// Demo functions for different sections
+function showDemo(section) {
+    const messages = {
+        'issue-return': '📖 Issue & Return Books Demo\n\n• Select available books from dropdown\n• Choose active members\n• Set issue and due dates\n• Return books with automatic fine calculation\n• View currently issued books with due date warnings\n\n⚠️ This is a static preview. Use PHP version for full functionality!',
+        'manage': '⚙️ Manage Members & Books Demo\n\n• Add new library members with contact info\n• Add books with title, author, ISBN, and quantity\n• View all members and their status\n• View all books and availability\n• Edit or deactivate members\n\n⚠️ This is a static preview. Use PHP version for full functionality!',
+        'database': '🗄️ Database Management Demo\n\n• View complete transaction history\n• Track book circulation patterns\n• Monitor member activity\n• Generate reports and statistics\n• Database backup and maintenance\n\n⚠️ This is a static preview. Use PHP version for full functionality!'
+    };
+
+    alert(messages[section] || 'Demo not available');
+}
+
+// Animate statistics
+function animateStats() {
+    const stats = [
+        { element: document.querySelectorAll('.stat-number')[0], target: 25 },
+        { element: document.querySelectorAll('.stat-number')[1], target: 12 },
+        { element: document.querySelectorAll('.stat-number')[2], target: 5 }
+    ];
+
+    stats.forEach((stat, index) => {
+        let current = 0;
+        const increment = stat.target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= stat.target) {
+                current = stat.target;
+                clearInterval(timer);
+            }
+            stat.element.textContent = Math.floor(current);
+        }, 50 + (index * 100));
+    });
+}
+
+// Add click animations to feature cards
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.feature-card')) {
+        const card = e.target.closest('.feature-card');
+        card.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+            card.style.transform = 'scale(1)';
+        }, 150);
+    }
+});
+</script>
+</body>
+</html>
