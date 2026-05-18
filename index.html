@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LMS - Book Search</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page-header">
+    <div>
+        <h1>Library Management System</h1>
+        <h2>Book Search Engine</h2>
+    </div>
+</div>
+
+<div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search by title or author">
+
+    <select id="categoryFilter">
+        <option value="">All Categories</option>
+    </select>
+
+    <button onclick="searchBooks()">Search</button>
+    <button onclick="clearSearch()" style="background: #95a5a6;">Clear</button>
+</div>
+
+<div id="results"></div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

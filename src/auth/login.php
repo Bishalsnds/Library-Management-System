@@ -43,12 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $success = 'Login successful!';
                 
-                // Redirect based on role
-                if ($user['role'] === 'admin') {
-                    header('Location: dashboard.php');
-                } else {
-                    header('Location: dashboard.php');
-                }
+                // Redirect to dashboard
+                header('Location: ../../index.php');
                 exit();
             }
         }
@@ -133,17 +129,3 @@ $conn->close();
     </div>
 </body>
 </html>
-            'name' => $user['first_name'] . ' ' . $user['last_name'],
-            'email' => $user['email'],
-            'role' => $user['role']
-        ]
-    ]);
-
-    $stmt->close();
-} else {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-}
-
-$conn->close();
-?>
