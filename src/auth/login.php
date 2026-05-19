@@ -68,7 +68,7 @@ $conn->close();
         <div class="login-side">
             <div class="side-content">
                 <div class="logo-section">
-                    <img src="../../logo.jpg" alt="Library Management System Logo" class="login-logo">
+                    <img src="../../public/assets/images/logo.png.jpg" alt="Library Management System Logo" class="login-logo">
                 </div>
                 <h1>Library System</h1>
                 <p>Manage books efficiently</p>
@@ -84,9 +84,10 @@ $conn->close();
             <div class="login-form-box">
                 <h1>Login</h1>
                 <?php if ($error): ?>
-                    <div class="error-message">
-                        <i class=""></i> <?php echo $error; ?>
-                    </div>
+                    <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
+                <?php endif; ?>
+                <?php if ($success): ?>
+                    <div class="success-message"><?php echo htmlspecialchars($success); ?></div>
                 <?php endif; ?>
 
                 <form method="POST" action="login.php" class="login-form">
@@ -122,10 +123,14 @@ $conn->close();
                     <button type="submit" class="login-btn">Login</button>
                 </form>
 
-                <p class="login-footer">
-                    Test Credentials:<br>
+                <p class="test-creds">
+                    <strong>Test Credentials:</strong><br>
                     Email: <strong>admin@library.com</strong><br>
                     Password: <strong>password123</strong>
+                </p>
+
+                <p class="login-footer">
+                    Don't have an account? <a href="signup.php" style="color: #667eea; text-decoration: none;">Sign up here</a>
                 </p>
             </div>
         </div>

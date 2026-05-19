@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($insert->execute()) {
                     $success = 'Account created successfully! Redirecting to login...';
-                    header("refresh:2;url=../../index.php");
+                    header('refresh:2;url=login.php');
                 } else {
                     $error = 'Error creating account: ' . $conn->error;
                 }
@@ -73,24 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Library Management System</title>
     <link rel="stylesheet" href="../../public/assets/css/style.css">
-    <style>
-        .error-message {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            border-left: 4px solid #f5c6cb;
-        }
-        .success-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            border-left: 4px solid #c3e6cb;
-        }
-    </style>
 </head>
 <body>
     <div class="login-container">
@@ -156,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </form>
 
                 <p class="login-footer">
-                    Already have an account? <a href="index.php" style="color: #667eea; text-decoration: none;">Login here</a>
+                    Already have an account? <a href="login.php" style="color: #667eea; text-decoration: none;">Login here</a>
                 </p>
             </div>
         </div>
