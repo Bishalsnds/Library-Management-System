@@ -222,12 +222,6 @@ $available_count = $available_books ? $available_books->fetch_assoc()['count'] :
                 </a>
                 <?php endif; ?>
 
-                <a href="src/modules/fines/index.php" class="menu-card">
-                    <div class="icon">💸</div>
-                    <h2>Fines &amp; Warnings</h2>
-                    <p>Manage fines, warnings &amp; payments</p>
-                </a>
-
                 <a href="http://localhost/phpmyadmin" class="menu-card">
                     <div class="icon">🗄️</div>
                     <h2>Database</h2>
