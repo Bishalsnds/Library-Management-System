@@ -26,20 +26,24 @@ $available_count = $available_books ? $available_books->fetch_assoc()['count'] :
     <title>Library Management System - Dashboard</title>
     <style>
         :root {
-            --primary: #667eea;
-            --primary-dark: #5a67d8;
-            --accent: #28a745;
+            --primary: #a749ff;
+            --primary-dark: #8a3ad9;
+            --accent: #ff8a3d;
             --surface: #ffffff;
-            --surface-alt: #f6f8ff;
-            --text: #1f2937;
-            --muted: #6b7280;
-            --border: #e5e7eb;
-            --shadow: 0 18px 50px rgba(102, 126, 234, 0.14);
+            --surface-alt: #faf3ff;
+            --text: #1f1230;
+            --muted: #6b5c80;
+            --border: #e9def8;
+            --shadow: 0 18px 50px rgba(167, 73, 255, 0.18);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(167, 73, 255, 0.30), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(255, 138, 61, 0.28), transparent 30%),
+                linear-gradient(180deg, #1a1030 0%, #130e28 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             color: var(--text);
         }
@@ -124,7 +128,7 @@ $available_count = $available_books ? $available_books->fetch_assoc()['count'] :
         }
         
         .menu-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             padding: 30px;
             border-radius: 10px;
             text-align: center;
@@ -170,13 +174,13 @@ $available_count = $available_books ? $available_books->fetch_assoc()['count'] :
             padding: 20px;
             border-radius: 8px;
             text-align: center;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid var(--primary);
         }
-        
+
         .stat-number {
             font-size: 2em;
             font-weight: bold;
-            color: #667eea;
+            color: var(--primary);
         }
         
         .stat-label {
@@ -222,10 +226,10 @@ $available_count = $available_books ? $available_books->fetch_assoc()['count'] :
                 </a>
                 <?php endif; ?>
 
-                <a href="http://localhost/phpmyadmin" class="menu-card">
-                    <div class="icon">🗄️</div>
-                    <h2>Database</h2>
-                    <p>View database records</p>
+                <a href="src/modules/fines/index.php" class="menu-card">
+                    <div class="icon">💸</div>
+                    <h2>Fines &amp; Warnings</h2>
+                    <p>Manage fines, warnings &amp; payments</p>
                 </a>
             </div>
 

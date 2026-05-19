@@ -1,0 +1,34 @@
+/* Global theme tokens — mirrors src/modules/fines/styles.css palette */
+:root {
+    --bg-1: #1a1030;
+    --bg-2: #130e28;
+    --primary: #a749ff;
+    --primary-dark: #8a3ad9;
+    --accent: #ff8a3d;
+    --accent-dark: #e6712a;
+    --surface: #ffffff;
+    --surface-soft: rgba(255, 255, 255, 0.96);
+    --surface-alt: #faf6ff;
+    --text: #1f1230;
+    --muted: #6b5c80;
+    --border: #e9def8;
+    --shadow: 0 24px 60px rgba(10, 8, 24, 0.35);
+    --shadow-soft: 0 18px 50px rgba(167, 73, 255, 0.14);
+    --danger: #e74c3c;
+    --danger-dark: #c0392b;
+    --success: #27ae60;
+    --success-dark: #229954;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at top left, rgba(167, 73, 255, 0.22), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(255, 138, 61, 0.18), transparent 22%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+    background-attachment: fixed;
+}

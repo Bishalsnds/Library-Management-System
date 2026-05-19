@@ -81,17 +81,30 @@ if (isset($_GET["delete_book"])) {
     <title>Library - Manage Members & Books</title>
     <style>
         :root {
-            --primary: #28a745;
-            --primary-soft: #ecfdf5;
+            --primary: #a749ff;
+            --primary-dark: #8a3ad9;
+            --primary-soft: #faf3ff;
+            --accent: #ff8a3d;
+            --accent-dark: #e6712a;
             --surface: #ffffff;
-            --surface-alt: #f8fafc;
-            --text: #1f2937;
-            --muted: #4b5563;
-            --border: #e5e7eb;
-            --shadow: 0 18px 50px rgba(15,23,42,0.08);
+            --surface-alt: #faf6ff;
+            --text: #1f1230;
+            --muted: #6b5c80;
+            --border: #e9def8;
+            --shadow: 0 18px 50px rgba(167,73,255,0.18);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2ff; min-height: 100vh; color: var(--text); padding: 0; }
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(167, 73, 255, 0.30), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(255, 138, 61, 0.28), transparent 30%),
+                linear-gradient(180deg, #1a1030 0%, #130e28 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text);
+            padding: 0;
+        }
         .page { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
         .card-wrap { background: rgba(255,255,255,0.98); border-radius: 28px; box-shadow: var(--shadow); padding: 32px; border: 1px solid rgba(229,231,235,.9); }
         .logo {
@@ -106,13 +119,13 @@ if (isset($_GET["delete_book"])) {
             display: inline-block;
             margin: 0 10px;
             padding: 10px 20px;
-            background: #28a745;
+            background: var(--primary);
             color: white;
             text-decoration: none;
             border-radius: 4px;
             transition: background 0.3s;
         }
-        .nav-links a:hover { background: #218838; }
+        .nav-links a:hover { background: var(--primary-dark); }
         .search-container {
             margin-bottom: 20px;
             display: flex;
@@ -128,13 +141,13 @@ if (isset($_GET["delete_book"])) {
         }
         .search-container button {
             padding: 10px 15px;
-            background: #007bff;
+            background: var(--accent);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
-        .search-container button:hover { background: #0056b3; }
+        .search-container button:hover { background: var(--accent-dark); }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -147,12 +160,12 @@ if (isset($_GET["delete_book"])) {
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             text-align: center;
-            border-left: 4px solid #28a745;
+            border-left: 4px solid var(--primary);
         }
         .stat-card h3 {
             margin: 0;
             font-size: 2em;
-            color: #28a745;
+            color: var(--primary);
         }
         .stat-card p {
             margin: 5px 0 0 0;
@@ -163,7 +176,7 @@ if (isset($_GET["delete_book"])) {
         .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .card h2 { color: #28a745; margin-bottom: 15px; }
+        .card h2 { color: var(--primary); margin-bottom: 15px; }
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
         input[type="text"], input[type="email"], input[type="tel"], select {
@@ -175,13 +188,13 @@ if (isset($_GET["delete_book"])) {
         }
         input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus {
             outline: none;
-            border-color: #28a745;
-            box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(167, 73, 255, 0.3);
         }
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 768px) { .row { grid-template-columns: 1fr; } }
         button { 
-            background: #28a745; 
+            background: var(--primary); 
             color: white; 
             padding: 12px 20px; 
             border: none; 
@@ -192,7 +205,7 @@ if (isset($_GET["delete_book"])) {
             width: 100%;
             transition: background 0.3s;
         }
-        button:hover { background: #218838; }
+        button:hover { background: var(--primary-dark); }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         table th { background: #f0f0f0; padding: 12px; text-align: left; border: 1px solid #ddd; font-weight: bold; }
         table td { padding: 12px; border: 1px solid #ddd; }
@@ -207,9 +220,9 @@ if (isset($_GET["delete_book"])) {
             cursor: pointer;
             border: none;
         }
-        .edit-btn { background: #007bff; color: white; }
+        .edit-btn { background: var(--accent); color: white; }
         .delete-btn { background: #dc3545; color: white; }
-        .edit-btn:hover { background: #0056b3; }
+        .edit-btn:hover { background: var(--accent-dark); }
         .delete-btn:hover { background: #c82333; }
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; font-weight: bold; }

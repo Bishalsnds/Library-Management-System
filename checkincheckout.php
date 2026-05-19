@@ -81,17 +81,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["return"])) {
     <title>Check In/Out - Library Management System</title>
     <style>
         :root {
-            --primary: #667eea;
-            --primary-dark: #5a67d8;
-            --text: #1f2937;
-            --muted: #6b7280;
-            --border: #e5e7eb;
-            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --primary: #a749ff;
+            --primary-dark: #8a3ad9;
+            --accent: #ff8a3d;
+            --text: #1f1230;
+            --muted: #6b5c80;
+            --border: #e9def8;
+            --shadow: 0 2px 8px rgba(10,8,24,0.18);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(167, 73, 255, 0.30), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(255, 138, 61, 0.28), transparent 30%),
+                linear-gradient(180deg, #1a1030 0%, #130e28 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             color: var(--text);
         }
@@ -223,7 +228,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["return"])) {
         select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(167, 73, 255, 0.15);
         }
         
         button {

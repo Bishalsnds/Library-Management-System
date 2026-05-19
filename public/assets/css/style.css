@@ -6,8 +6,11 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(167, 73, 255, 0.35), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(255, 138, 61, 0.30), transparent 35%),
+        linear-gradient(180deg, #1a1030 0%, #130e28 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -19,11 +22,22 @@ body {
     display: flex;
     width: 100%;
     max-width: 1000px;
-    height: 550px;
+    min-height: 550px;
     background: white;
     border-radius: 10px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        height: auto;
+    }
+    .login-side,
+    .login-wrapper {
+        width: 100%;
+    }
 }
 
 .login-side {
@@ -32,7 +46,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #a749ff 0%, #ff8a3d 100%);
     color: white;
 }
 
@@ -127,19 +141,26 @@ body {
 }
 
 .form-group input[type="email"],
-.form-group input[type="password"] {
+.form-group input[type="password"],
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="number"] {
     padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 14px;
+    width: 100%;
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .form-group input[type="email"]:focus,
-.form-group input[type="password"]:focus {
+.form-group input[type="password"]:focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="tel"]:focus,
+.form-group input[type="number"]:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+    border-color: #a749ff;
+    box-shadow: 0 0 5px rgba(167, 73, 255, 0.3);
 }
 
 .form-group input::placeholder {
@@ -170,7 +191,7 @@ body {
 
 .login-btn {
     padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #a749ff 0%, #ff8a3d 100%);
     color: white;
     border: none;
     border-radius: 5px;
@@ -183,7 +204,7 @@ body {
 
 .login-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 20px rgba(167, 73, 255, 0.4);
 }
 
 .login-btn:active {
@@ -191,13 +212,13 @@ body {
 }
 
 .test-creds {
-    background: #f0f4ff;
+    background: #faf3ff;
     padding: 15px;
     border-radius: 5px;
     font-size: 13px;
     color: #555;
     margin-top: 20px;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #a749ff;
     line-height: 1.6;
 }
 
@@ -210,6 +231,26 @@ body {
     color: #999;
     text-align: center;
     margin-top: 15px;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border-left: 4px solid #f5c6cb;
+    font-size: 14px;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border-left: 4px solid #c3e6cb;
+    font-size: 14px;
 }
 
 /* Web-Friendly Desktop Layout - Minimal Responsive for Large Screens */
