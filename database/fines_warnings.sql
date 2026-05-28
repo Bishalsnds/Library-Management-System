@@ -116,6 +116,24 @@ INSERT INTO warnings (student_id, student_name, warning_level, note, status, iss
 (4, 'Liam Pedersen', 'Level 1', 'Damage to returned book cover. Please handle books carefully.', 'resolved', NOW() - INTERVAL 20 DAY);
 
 -- ============================================
+-- PAYMENTS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS payments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  payment_id VARCHAR(100) UNIQUE NOT NULL,
+  fine_id INT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  method ENUM('google_pay','mobile_pay') NOT NULL,
+  status ENUM('pending','completed','failed','cancelled') DEFAULT 'pending',
+  transaction_id VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (fine_id) REFERENCES fines(fine_id) ON DELETE CASCADE,
+  INDEX idx_fine_id (fine_id),
+  INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
 -- VIEWS (Optional for reporting)
 -- ============================================
 

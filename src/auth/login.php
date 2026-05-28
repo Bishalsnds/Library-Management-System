@@ -6,11 +6,9 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get and sanitize input
     $email = sanitize($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    // Validation
     if (empty($email)) {
         $error = 'Email is required';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -18,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($password)) {
         $error = 'Password is required';
     } else {
-        // Fetch user from database
         $stmt = $conn->prepare("SELECT id, first_name, last_name, email, password, role, status FROM users WHERE email = ?");
         $stmt->bind_param('s', $email);
         $stmt->execute();
@@ -29,21 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $user = $result->fetch_assoc();
 
-            // Check if account is active
             if ($user['status'] !== 'active') {
                 $error = 'Your account is inactive';
             } elseif (!password_verify($password, $user['password'])) {
                 $error = 'Invalid email or password';
             } else {
-                // Login successful - create session
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
                 $_SESSION['user_role'] = $user['role'];
-                
+
                 $success = 'Login successful!';
-                
-                // Redirect to dashboard
                 header('Location: ../../index.php');
                 exit();
             }
@@ -62,6 +55,23 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Management System - Login</title>
     <link rel="stylesheet" href="../../public/assets/css/style.css">
+    <style>
+        .field-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+            min-height: 18px;
+        }
+        .input-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12) !important;
+        }
+        .input-valid {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.10) !important;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
@@ -90,28 +100,30 @@ $conn->close();
                     <div class="success-message"><?php echo htmlspecialchars($success); ?></div>
                 <?php endif; ?>
 
-                <form method="POST" action="login.php" class="login-form">
+                <form method="POST" action="login.php" class="login-form" id="loginForm" novalidate>
                     <div class="form-group">
                         <label for="email">Email Address</label>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            name="email" 
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
                             placeholder="Enter your email"
                             value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
-                            required
+                            autocomplete="email"
                         >
+                        <span class="field-error" id="email-error"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
                             placeholder="Enter your password"
-                            required
+                            autocomplete="current-password"
                         >
+                        <span class="field-error" id="password-error"></span>
                     </div>
 
                     <div class="form-options">
@@ -135,5 +147,70 @@ $conn->close();
             </div>
         </div>
     </div>
+
+    <script>
+        function setError(inputId, errorId, message) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            input.classList.add('input-invalid');
+            input.classList.remove('input-valid');
+            error.textContent = message;
+        }
+
+        function setValid(inputId, errorId) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            input.classList.remove('input-invalid');
+            input.classList.add('input-valid');
+            error.textContent = '';
+        }
+
+        function clearState(inputId, errorId) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            input.classList.remove('input-invalid', 'input-valid');
+            error.textContent = '';
+        }
+
+        function validateEmail() {
+            const val = document.getElementById('email').value.trim();
+            if (!val) {
+                setError('email', 'email-error', 'Email address is required.');
+                return false;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+                setError('email', 'email-error', 'Please enter a valid email address (e.g. user@example.com).');
+                return false;
+            }
+            setValid('email', 'email-error');
+            return true;
+        }
+
+        function validatePassword() {
+            const val = document.getElementById('password').value;
+            if (!val) {
+                setError('password', 'password-error', 'Password is required.');
+                return false;
+            }
+            setValid('password', 'password-error');
+            return true;
+        }
+
+        document.getElementById('email').addEventListener('blur', validateEmail);
+        document.getElementById('email').addEventListener('input', function() {
+            if (this.classList.contains('input-invalid')) validateEmail();
+        });
+
+        document.getElementById('password').addEventListener('blur', validatePassword);
+        document.getElementById('password').addEventListener('input', function() {
+            if (this.classList.contains('input-invalid')) validatePassword();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const emailOk = validateEmail();
+            const passOk = validatePassword();
+            if (!emailOk || !passOk) e.preventDefault();
+        });
+    </script>
 </body>
 </html>

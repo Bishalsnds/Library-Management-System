@@ -1,76 +1,133 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+session_start();
 
-$conn = new mysqli("localhost", "root", "", "library_db");
-if ($conn->connect_error) {
-    die("DB Connection failed: " . $conn->connect_error);
+if (!isset($_SESSION['user_id'])) {
+    header('Location: src/auth/login.php');
+    exit();
 }
+
+if (!in_array($_SESSION['user_role'], ['admin', 'librarian'])) {
+    header('Location: index.php');
+    exit();
+}
+
+require_once 'config.php';
 
 $message = "";
 $msg_type = "";
+$editMode = false;
+$editBook = null;
 
-// Add new member
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_member"])) {
-    $name = trim($_POST["member_name"]);
-    $email = trim($_POST["member_email"]);
-    $phone = trim($_POST["member_phone"]);
+// Load book for editing
+$editId = isset($_GET['edit']) ? intval($_GET['edit']) : 0;
+if ($editId > 0) {
+    $res = $conn->query("SELECT * FROM books WHERE id = $editId");
+    if ($res && $res->num_rows > 0) {
+        $editBook = $res->fetch_assoc();
+        $editMode = true;
+    }
+}
 
-    if ($name) {
-        $stmt = $conn->prepare("INSERT INTO members (name, email, phone, active) VALUES (?, ?, ?, 1)");
-        $stmt->bind_param("sss", $name, $email, $phone);
+// Add book
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_book'])) {
+    $title    = sanitize($_POST['title']    ?? '');
+    $author   = sanitize($_POST['author']   ?? '');
+    $category = sanitize($_POST['category'] ?? '');
+    $available = isset($_POST['available']) ? 1 : 0;
+
+    if ($title && $author && $category) {
+        $stmt = $conn->prepare("INSERT INTO books (title, author, category, available) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("sssi", $title, $author, $category, $available);
         if ($stmt->execute()) {
-            $message = "✅ Member added successfully!";
+            $message  = "Book added successfully!";
             $msg_type = "success";
         } else {
-            $message = "❌ Error adding member: " . $stmt->error;
+            $message  = "Error adding book: " . $stmt->error;
             $msg_type = "error";
         }
         $stmt->close();
     } else {
-        $message = "❌ Please enter member name.";
+        $message  = "Please fill in all required fields (Title, Author, Category).";
         $msg_type = "error";
     }
 }
 
-// Add new book
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add_book"])) {
-    $title = trim($_POST["title"]);
-    $author = trim($_POST["author"]);
-    $isbn = trim($_POST["isbn"]);
-    $quantity = intval($_POST["quantity"]);
+// Update book
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_book'])) {
+    $book_id  = intval($_POST['book_id']    ?? 0);
+    $title    = sanitize($_POST['title']    ?? '');
+    $author   = sanitize($_POST['author']   ?? '');
+    $category = sanitize($_POST['category'] ?? '');
+    $available = isset($_POST['available']) ? 1 : 0;
 
-    if ($title && $author && $quantity > 0) {
-        $stmt = $conn->prepare("INSERT INTO books (title, author, isbn, available, total) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssii", $title, $author, $isbn, $quantity, $quantity);
+    if ($book_id > 0 && $title && $author && $category) {
+        $stmt = $conn->prepare("UPDATE books SET title=?, author=?, category=?, available=? WHERE id=?");
+        $stmt->bind_param("sssii", $title, $author, $category, $available, $book_id);
         if ($stmt->execute()) {
-            $message = "✅ Book added successfully!";
+            $message  = "Book updated successfully!";
             $msg_type = "success";
+            $editMode = false;
+            $editBook = null;
+            header("Refresh: 1; url=manage.php");
         } else {
-            $message = "❌ Error adding book: " . $stmt->error;
+            $message  = "Error updating book: " . $stmt->error;
             $msg_type = "error";
         }
         $stmt->close();
     } else {
-        $message = "❌ Please fill all fields correctly.";
+        $message  = "Please fill in all required fields.";
         $msg_type = "error";
     }
-}
-
-// Delete member
-if (isset($_GET["delete_member"])) {
-    $member_id = intval($_GET["delete_member"]);
-    $conn->query("UPDATE members SET active = 0 WHERE member_id = $member_id");
-    $message = "✅ Member deactivated!";
-    $msg_type = "success";
 }
 
 // Delete book
-if (isset($_GET["delete_book"])) {
-    $book_id = intval($_GET["delete_book"]);
-    $conn->query("DELETE FROM books WHERE book_id = $book_id");
-    $message = "✅ Book deleted!";
-    $msg_type = "success";
+if (isset($_GET['delete_book'])) {
+    $book_id = intval($_GET['delete_book']);
+    if ($book_id > 0) {
+        if ($conn->query("DELETE FROM books WHERE id = $book_id")) {
+            $message  = "Book deleted successfully!";
+            $msg_type = "success";
+        } else {
+            $message  = "Error deleting book: " . $conn->error;
+            $msg_type = "error";
+        }
+    }
+}
+
+// Toggle user active/inactive
+if (isset($_GET['toggle_user'])) {
+    $user_id = intval($_GET['toggle_user']);
+    if ($user_id > 0 && $user_id !== (int)$_SESSION['user_id']) {
+        $u = $conn->query("SELECT status FROM users WHERE id = $user_id");
+        if ($u && $u->num_rows > 0) {
+            $cur = $u->fetch_assoc()['status'];
+            $new = $cur === 'active' ? 'inactive' : 'active';
+            $conn->query("UPDATE users SET status='$new' WHERE id=$user_id");
+            $message  = "User status changed to $new.";
+            $msg_type = "success";
+        }
+    }
+}
+
+// Stats
+$stat_total     = $conn->query("SELECT COUNT(*) as c FROM books")->fetch_assoc()['c'] ?? 0;
+$stat_avail     = $conn->query("SELECT COUNT(*) as c FROM books WHERE available = 1")->fetch_assoc()['c'] ?? 0;
+$stat_users     = $conn->query("SELECT COUNT(*) as c FROM users WHERE status = 'active'")->fetch_assoc()['c'] ?? 0;
+$co_res         = $conn->query("SELECT COUNT(*) as c FROM transactions WHERE transaction_type = 'checkout'");
+$stat_checked   = $co_res ? $co_res->fetch_assoc()['c'] : 0;
+
+// Fetch all books for the list
+$books_res = $conn->query("SELECT * FROM books ORDER BY id DESC");
+$books = [];
+if ($books_res) {
+    while ($row = $books_res->fetch_assoc()) $books[] = $row;
+}
+
+// Fetch all users
+$users_res = $conn->query("SELECT id, first_name, last_name, email, student_id, role, status, created_at FROM users ORDER BY id DESC");
+$users = [];
+if ($users_res) {
+    while ($row = $users_res->fetch_assoc()) $users[] = $row;
 }
 ?>
 <!DOCTYPE html>
@@ -78,16 +135,15 @@ if (isset($_GET["delete_book"])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library - Manage Members & Books</title>
+    <title>Manage Books – Library Management System</title>
     <style>
         :root {
             --primary: #a749ff;
             --primary-dark: #8a3ad9;
-            --primary-soft: #faf3ff;
             --accent: #ff8a3d;
             --accent-dark: #e6712a;
             --surface: #ffffff;
-            --surface-alt: #faf6ff;
+            --surface-alt: #faf3ff;
             --text: #1f1230;
             --muted: #6b5c80;
             --border: #e9def8;
@@ -97,369 +153,394 @@ if (isset($_GET["delete_book"])) {
         body {
             font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background:
-                radial-gradient(circle at top left, rgba(167, 73, 255, 0.30), transparent 30%),
-                radial-gradient(circle at bottom right, rgba(255, 138, 61, 0.28), transparent 30%),
+                radial-gradient(circle at top left, rgba(167,73,255,0.30), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(255,138,61,0.28), transparent 30%),
                 linear-gradient(180deg, #1a1030 0%, #130e28 100%);
             background-attachment: fixed;
             min-height: 100vh;
             color: var(--text);
-            padding: 0;
         }
-        .page { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
-        .card-wrap { background: rgba(255,255,255,0.98); border-radius: 28px; box-shadow: var(--shadow); padding: 32px; border: 1px solid rgba(229,231,235,.9); }
-        .logo {
-            display: block;
-            margin: 0 auto 20px;
-            max-width: 170px;
-            height: auto;
-        }
-        h1 { color: #333; margin-bottom: 20px; text-align: center; }
-        .nav-links { text-align: center; margin-bottom: 20px; }
-        .nav-links a { 
-            display: inline-block;
-            margin: 0 10px;
-            padding: 10px 20px;
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-        .nav-links a:hover { background: var(--primary-dark); }
-        .search-container {
-            margin-bottom: 20px;
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 16px 30px;
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
             align-items: center;
         }
-        .search-container input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .navbar-brand { font-size: 1.4em; font-weight: bold; color: var(--primary); }
+        .navbar-menu { display: flex; gap: 16px; align-items: center; }
+        .navbar-menu a {
+            text-decoration: none;
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
             font-size: 14px;
         }
-        .search-container button {
-            padding: 10px 15px;
-            background: var(--accent);
+        .navbar-menu a:hover { background: var(--surface-alt); color: var(--primary); }
+        .logout-btn { background: var(--primary) !important; color: white !important; }
+        .logout-btn:hover { background: var(--primary-dark) !important; }
+
+        /* Layout */
+        .page { max-width: 1200px; margin: 30px auto; padding: 0 20px 60px; }
+
+        .back-btn {
+            display: inline-block;
+            background: var(--primary);
             color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.2s;
         }
-        .search-container button:hover { background: var(--accent-dark); }
+        .back-btn:hover { background: var(--primary-dark); transform: translateX(-3px); }
+
+        /* Alert */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .alert-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .alert-error   { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+
+        /* Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 16px;
+            margin-bottom: 28px;
         }
         .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.96);
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
             text-align: center;
             border-left: 4px solid var(--primary);
         }
-        .stat-card h3 {
-            margin: 0;
-            font-size: 2em;
-            color: var(--primary);
+        .stat-card.accent { border-left-color: var(--accent); }
+        .stat-number { font-size: 2.2em; font-weight: bold; color: var(--primary); }
+        .stat-card.accent .stat-number { color: var(--accent); }
+        .stat-label  { color: var(--muted); font-size: 0.88em; margin-top: 4px; }
+
+        /* Section cards */
+        .card {
+            background: rgba(255,255,255,0.97);
+            padding: 26px;
+            margin-bottom: 24px;
+            border-radius: 14px;
+            box-shadow: var(--shadow);
         }
-        .stat-card p {
-            margin: 5px 0 0 0;
-            color: #666;
-            font-weight: 500;
-        }
-        .message { padding: 12px; margin-bottom: 20px; border-radius: 5px; font-weight: bold; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .card h2 { color: var(--primary); margin-bottom: 15px; }
-        .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
-        input[type="text"], input[type="email"], input[type="tel"], select {
+        .card h2 { color: var(--primary); margin-bottom: 18px; font-size: 1.25em; }
+
+        /* Forms */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text); }
+        .form-group input[type="text"],
+        .form-group select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
             font-size: 14px;
-        }
-        input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus {
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 5px rgba(167, 73, 255, 0.3);
+            box-shadow: 0 0 0 3px rgba(167,73,255,0.12);
         }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { .row { grid-template-columns: 1fr; } }
-        button { 
-            background: var(--primary); 
-            color: white; 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: 4px;
-            cursor: pointer;
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+        .checkbox-group input { width: 16px; height: 16px; cursor: pointer; }
+        .checkbox-group label { margin: 0; font-size: 14px; font-weight: 500; cursor: pointer; }
+
+        .btn { padding: 11px 20px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary  { background: var(--primary); color: white; }
+        .btn-primary:hover  { background: var(--primary-dark); }
+        .btn-accent   { background: var(--accent); color: white; }
+        .btn-accent:hover   { background: var(--accent-dark); }
+        .btn-secondary { background: #f0eff5; color: var(--text); }
+        .btn-secondary:hover { background: var(--border); }
+        .btn-group { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+
+        /* Table */
+        .search-row { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
+        .search-row input {
+            flex: 1;
+            padding: 9px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
             font-size: 14px;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.3s;
+            outline: none;
+            transition: border-color 0.2s;
         }
-        button:hover { background: var(--primary-dark); }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        table th { background: #f0f0f0; padding: 12px; text-align: left; border: 1px solid #ddd; font-weight: bold; }
-        table td { padding: 12px; border: 1px solid #ddd; }
-        table tr:hover { background: #f9f9f9; }
-        .action-btn { 
+        .search-row input:focus { border-color: var(--primary); }
+        .search-row button { padding: 9px 16px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .search-row button:hover { background: var(--accent-dark); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead th {
+            background: #f7f3ff;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text);
+            border-bottom: 2px solid var(--border);
+        }
+        tbody td { padding: 12px 14px; border-bottom: 1px solid #f0ebfa; vertical-align: middle; }
+        tbody tr:hover { background: #faf7ff; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .badge {
             display: inline-block;
-            padding: 6px 12px;
-            margin: 2px;
-            border-radius: 4px;
-            text-decoration: none;
+            padding: 3px 10px;
+            border-radius: 20px;
             font-size: 12px;
-            cursor: pointer;
-            border: none;
+            font-weight: 600;
         }
-        .edit-btn { background: var(--accent); color: white; }
-        .delete-btn { background: #dc3545; color: white; }
-        .edit-btn:hover { background: var(--accent-dark); }
-        .delete-btn:hover { background: #c82333; }
-        .status-active { color: green; font-weight: bold; }
-        .status-inactive { color: red; font-weight: bold; }
+        .badge-available { background: #d4edda; color: #155724; }
+        .badge-unavailable { background: #f8d7da; color: #721c24; }
+        .badge-active   { background: #d4edda; color: #155724; }
+        .badge-inactive { background: #f8d7da; color: #721c24; }
+        .badge-admin    { background: #e8d5ff; color: #6d28d9; }
+        .badge-librarian { background: #dbeafe; color: #1d4ed8; }
+        .badge-student  { background: #f3f4f6; color: #374151; }
+
+        .action-link {
+            display: inline-block;
+            padding: 5px 11px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            margin: 2px;
+            transition: opacity 0.2s;
+        }
+        .action-link:hover { opacity: 0.82; }
+        .action-edit   { background: var(--accent);   color: white; }
+        .action-delete { background: #dc3545;          color: white; }
+        .action-toggle { background: #6b7280;          color: white; }
+
+        .empty-row td { text-align: center; color: var(--muted); padding: 30px; }
     </style>
 </head>
 <body>
-<div class="page">
-    <div class="card-wrap">
-    <img src="logo.jpg" alt="Library Logo" class="logo">
-    <h1>📚 Library Management</h1>
-    
-    <div class="nav-links">
-        <a href="index.php">🏠 Home</a>
-        <a href="checkincheckout.php">📖 Check In/Out</a>
-        <a href="manage.php">👥 Manage Members & Books</a>
-    </div>
 
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <?php
-        $total_members = $conn->query("SELECT COUNT(*) as count FROM members WHERE active = 1")->fetch_assoc()['count'];
-        $total_books = $conn->query("SELECT COUNT(*) as count FROM books")->fetch_assoc()['count'];
-        $available_books = $conn->query("SELECT SUM(available) as count FROM books")->fetch_assoc()['count'];
-        $issued_books = $conn->query("SELECT COUNT(*) as count FROM transactions WHERE status = 'issued'")->fetch_assoc()['count'];
-        ?>
-        <div class="stat-card">
-            <h3><?= $total_members ?></h3>
-            <p>Active Members</p>
-        </div>
-        <div class="stat-card">
-            <h3><?= $total_books ?></h3>
-            <p>Total Books</p>
-        </div>
-        <div class="stat-card">
-            <h3><?= $available_books ?></h3>
-            <p>Available Books</p>
-        </div>
-        <div class="stat-card" style="border-left-color: #ffc107;">
-            <h3 style="color: #ffc107;"><?= $issued_books ?></h3>
-            <p>Books Issued</p>
-        </div>
+<div class="navbar">
+    <div class="navbar-brand">📚 Library Management System</div>
+    <div class="navbar-menu">
+        <span style="font-size:13px;color:var(--muted)">
+            <?= htmlspecialchars($_SESSION['user_name']) ?> (<?= htmlspecialchars($_SESSION['user_role']) ?>)
+        </span>
+        <a href="index.php">Dashboard</a>
+        <a href="src/auth/logout.php" class="logout-btn">Logout</a>
     </div>
+</div>
+
+<div class="page">
+    <a href="index.php" class="back-btn">← Back to Dashboard</a>
 
     <?php if ($message): ?>
-        <div class="message <?= $msg_type ?>">
+        <div class="alert alert-<?= $msg_type === 'success' ? 'success' : 'error' ?>">
             <?= htmlspecialchars($message) ?>
         </div>
     <?php endif; ?>
 
-    <div class="row">
-        <!-- Add Member Form -->
-        <div class="card">
-            <h2>➕ Add New Member</h2>
-            <form method="post">
-                <div class="form-group">
-                    <label for="member_name">Member Name:</label>
-                    <input type="text" id="member_name" name="member_name" required placeholder="Enter full name">
-                </div>
-                <div class="form-group">
-                    <label for="member_email">Email:</label>
-                    <input type="email" id="member_email" name="member_email" placeholder="Enter email (optional)">
-                </div>
-                <div class="form-group">
-                    <label for="member_phone">Phone:</label>
-                    <input type="tel" id="member_phone" name="member_phone" placeholder="Enter phone (optional)">
-                </div>
-                <button type="submit" name="add_member">Add Member</button>
-            </form>
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number"><?= $stat_total ?></div>
+            <div class="stat-label">Total Books</div>
         </div>
-
-        <!-- Add Book Form -->
-        <div class="card">
-            <h2>📕 Add New Book</h2>
-            <form method="post">
-                <div class="form-group">
-                    <label for="title">Book Title:</label>
-                    <input type="text" id="title" name="title" required placeholder="Enter book title">
-                </div>
-                <div class="form-group">
-                    <label for="author">Author:</label>
-                    <input type="text" id="author" name="author" required placeholder="Enter author name">
-                </div>
-                <div class="form-group">
-                    <label for="isbn">ISBN:</label>
-                    <input type="text" id="isbn" name="isbn" placeholder="Enter ISBN (optional)">
-                </div>
-                <div class="form-group">
-                    <label for="quantity">Quantity:</label>
-                    <input type="number" id="quantity" name="quantity" min="1" value="1" required>
-                </div>
-                <button type="submit" name="add_book">Add Book</button>
-            </form>
+        <div class="stat-card">
+            <div class="stat-number"><?= $stat_avail ?></div>
+            <div class="stat-label">Available Books</div>
+        </div>
+        <div class="stat-card accent">
+            <div class="stat-number"><?= $stat_checked ?></div>
+            <div class="stat-label">Checked Out</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number"><?= $stat_users ?></div>
+            <div class="stat-label">Active Users</div>
         </div>
     </div>
 
-    <!-- Members List -->
+    <!-- Add / Edit Book Form -->
     <div class="card">
-        <h2>👥 All Members</h2>
-        <div class="search-container">
-            <input type="text" id="member-search" placeholder="Search members by name, email, or phone..." onkeyup="filterMembers()">
-            <button onclick="clearMemberSearch()">Clear</button>
-        </div>
-        <table id="members-table">
-            <thead>
-                <tr>
-                    <th>Member ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $members = $conn->query("SELECT * FROM members ORDER BY member_id DESC");
-                if ($members && $members->num_rows > 0) {
-                    while ($member = $members->fetch_assoc()) {
-                        $status = $member['active'] == 1 ? '<span class="status-active">✓ Active</span>' : '<span class="status-inactive">✗ Inactive</span>';
-                        echo "<tr>
-                            <td>#{$member['member_id']}</td>
-                            <td>{$member['name']}</td>
-                            <td>{$member['email']}</td>
-                            <td>{$member['phone']}</td>
-                            <td>$status</td>
-                            <td>
-                                <a href='?delete_member={$member['member_id']}' class='action-btn delete-btn' onclick='return confirm(\"Deactivate this member?\")'>Deactivate</a>
-                            </td>
-                        </tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='6' style='text-align: center; color: #999;'>No members found</td></tr>";
-                }
-                ?>
-            </tbody>
-        </table>
+        <h2><?= $editMode ? '✏️ Edit Book' : '📕 Add New Book' ?></h2>
+        <form method="POST" action="manage.php<?= $editMode ? '?edit=' . $editBook['id'] : '' ?>">
+            <?php if ($editMode): ?>
+                <input type="hidden" name="book_id" value="<?= $editBook['id'] ?>">
+            <?php endif; ?>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="title">Title <span style="color:#dc3545">*</span></label>
+                    <input type="text" id="title" name="title" placeholder="Book title"
+                           value="<?= htmlspecialchars($editBook['title'] ?? ($_POST['title'] ?? '')) ?>" required>
+                </div>
+                <div class="form-group">
+                    <label for="author">Author <span style="color:#dc3545">*</span></label>
+                    <input type="text" id="author" name="author" placeholder="Author name"
+                           value="<?= htmlspecialchars($editBook['author'] ?? ($_POST['author'] ?? '')) ?>" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category <span style="color:#dc3545">*</span></label>
+                    <input type="text" id="category" name="category" placeholder="e.g. Fiction, Programming, Science"
+                           value="<?= htmlspecialchars($editBook['category'] ?? ($_POST['category'] ?? '')) ?>" required>
+                </div>
+                <div class="form-group">
+                    <label>Availability</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="available" name="available"
+                               <?= (!$editMode || ($editBook['available'] ?? true)) ? 'checked' : '' ?>>
+                        <label for="available">Mark as Available</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <?php if ($editMode): ?>
+                    <button type="submit" name="update_book" class="btn btn-primary">Save Changes</button>
+                    <a href="manage.php" class="btn btn-secondary">Cancel</a>
+                <?php else: ?>
+                    <button type="submit" name="add_book" class="btn btn-primary">Add Book</button>
+                <?php endif; ?>
+            </div>
+        </form>
     </div>
 
     <!-- Books List -->
     <div class="card">
         <h2>📚 All Books</h2>
-        <div class="search-container">
-            <input type="text" id="book-search" placeholder="Search books by title or author..." onkeyup="filterBooks()">
-            <button onclick="clearBookSearch()">Clear</button>
+        <div class="search-row">
+            <input type="text" id="book-search" placeholder="Search by title, author, or category…" oninput="filterTable('book-search','books-table')">
+            <button onclick="clearSearch('book-search','books-table')">Clear</button>
         </div>
         <table id="books-table">
             <thead>
                 <tr>
-                    <th>Book ID</th>
+                    <th>#</th>
                     <th>Title</th>
                     <th>Author</th>
-                    <th>ISBN</th>
-                    <th>Available</th>
-                    <th>Total</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Added</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $books = $conn->query("SELECT * FROM books ORDER BY book_id DESC");
-                if ($books && $books->num_rows > 0) {
-                    while ($book = $books->fetch_assoc()) {
-                        $color = $book['available'] > 0 ? 'green' : 'red';
-                        echo "<tr>
-                            <td>#{$book['book_id']}</td>
-                            <td>{$book['title']}</td>
-                            <td>{$book['author']}</td>
-                            <td>{$book['isbn']}</td>
-                            <td><span style='color: {$color}; font-weight: bold;'>{$book['available']}</span></td>
-                            <td>{$book['total']}</td>
-                            <td>
-                                <a href='?delete_book={$book['book_id']}' class='action-btn delete-btn' onclick='return confirm(\"Delete this book?\")'>Delete</a>
-                            </td>
-                        </tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='7' style='text-align: center; color: #999;'>No books found</td></tr>";
-                }
-                ?>
+                <?php if (count($books) === 0): ?>
+                    <tr class="empty-row"><td colspan="7">No books in the library yet.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($books as $book): ?>
+                    <tr>
+                        <td><?= $book['id'] ?></td>
+                        <td><?= htmlspecialchars($book['title']) ?></td>
+                        <td><?= htmlspecialchars($book['author']) ?></td>
+                        <td><?= htmlspecialchars($book['category']) ?></td>
+                        <td>
+                            <?php if ($book['available']): ?>
+                                <span class="badge badge-available">✓ Available</span>
+                            <?php else: ?>
+                                <span class="badge badge-unavailable">✗ Checked Out</span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?= date('Y-m-d', strtotime($book['created_at'])) ?></td>
+                        <td>
+                            <a href="manage.php?edit=<?= $book['id'] ?>" class="action-link action-edit">Edit</a>
+                            <a href="manage.php?delete_book=<?= $book['id'] ?>" class="action-link action-delete"
+                               onclick="return confirm('Delete \'<?= htmlspecialchars(addslashes($book['title'])) ?>\'? This cannot be undone.')">Delete</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
+
+    <!-- Users List -->
+    <div class="card">
+        <h2>👥 Registered Users</h2>
+        <div class="search-row">
+            <input type="text" id="user-search" placeholder="Search by name, email, or student ID…" oninput="filterTable('user-search','users-table')">
+            <button onclick="clearSearch('user-search','users-table')">Clear</button>
+        </div>
+        <table id="users-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Student ID</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (count($users) === 0): ?>
+                    <tr class="empty-row"><td colspan="7">No users found.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($users as $user): ?>
+                    <tr>
+                        <td><?= $user['id'] ?></td>
+                        <td><?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></td>
+                        <td><?= htmlspecialchars($user['email']) ?></td>
+                        <td><?= htmlspecialchars($user['student_id'] ?? '—') ?></td>
+                        <td><span class="badge badge-<?= $user['role'] ?>"><?= ucfirst($user['role']) ?></span></td>
+                        <td>
+                            <span class="badge badge-<?= $user['status'] ?>"><?= ucfirst($user['status']) ?></span>
+                        </td>
+                        <td>
+                            <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                            <a href="manage.php?toggle_user=<?= $user['id'] ?>" class="action-link action-toggle"
+                               onclick="return confirm('Toggle status for <?= htmlspecialchars(addslashes($user['first_name'])) ?>?')">
+                                <?= $user['status'] === 'active' ? 'Deactivate' : 'Activate' ?>
+                            </a>
+                            <?php else: ?>
+                                <span style="color:var(--muted);font-size:12px">(you)</span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 
+</div>
+
 <script>
-// Search functionality for members
-function filterMembers() {
-    const input = document.getElementById('member-search');
-    const filter = input.value.toLowerCase();
-    const table = document.getElementById('members-table');
-    const rows = table.getElementsByTagName('tr');
-
-    for (let i = 1; i < rows.length; i++) {
-        const cells = rows[i].getElementsByTagName('td');
-        let match = false;
-
-        for (let j = 0; j < cells.length - 1; j++) { // Exclude actions column
-            if (cells[j] && cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
-                match = true;
-                break;
-            }
-        }
-
-        rows[i].style.display = match ? '' : 'none';
-    }
+function filterTable(inputId, tableId) {
+    const filter = document.getElementById(inputId).value.toLowerCase();
+    const rows = document.querySelectorAll('#' + tableId + ' tbody tr:not(.empty-row)');
+    let visible = 0;
+    rows.forEach(row => {
+        const text = Array.from(row.querySelectorAll('td')).slice(0, -1).map(td => td.textContent).join(' ').toLowerCase();
+        const show = text.includes(filter);
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
 }
 
-function clearMemberSearch() {
-    document.getElementById('member-search').value = '';
-    filterMembers();
-}
-
-// Search functionality for books
-function filterBooks() {
-    const input = document.getElementById('book-search');
-    const filter = input.value.toLowerCase();
-    const table = document.getElementById('books-table');
-    const rows = table.getElementsByTagName('tr');
-
-    for (let i = 1; i < rows.length; i++) {
-        const cells = rows[i].getElementsByTagName('td');
-        let match = false;
-
-        for (let j = 0; j < cells.length - 1; j++) { // Exclude actions column
-            if (cells[j] && cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
-                match = true;
-                break;
-            }
-        }
-
-        rows[i].style.display = match ? '' : 'none';
-    }
-}
-
-function clearBookSearch() {
-    document.getElementById('book-search').value = '';
-    filterBooks();
+function clearSearch(inputId, tableId) {
+    document.getElementById(inputId).value = '';
+    filterTable(inputId, tableId);
 }
 </script>
 </body>
