@@ -1,12 +1,12 @@
 -- Library Management System - Complete Database Setup
--- Drop existing databases to start fresh
-DROP DATABASE IF EXISTS library_db;
+-- Safe to import on any machine, including ones with an existing database.
+-- Uses CREATE IF NOT EXISTS + INSERT ... ON DUPLICATE KEY UPDATE so no data is lost.
 
--- Create Database
-CREATE DATABASE IF NOT EXISTS library_db;
+CREATE DATABASE IF NOT EXISTS library_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE library_db;
 
--- Create Users Table
+-- ── Tables ────────────────────────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     first_name VARCHAR(50) NOT NULL,
@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_student_id (student_id)
 );
 
--- Create Books Table
 CREATE TABLE IF NOT EXISTS books (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -32,7 +31,6 @@ CREATE TABLE IF NOT EXISTS books (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Book Transactions Table (for check-in/check-out)
 CREATE TABLE IF NOT EXISTS transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -47,37 +45,48 @@ CREATE TABLE IF NOT EXISTS transactions (
     INDEX idx_book_id (book_id)
 );
 
--- Insert Sample Users (password: password123)
-INSERT INTO users (first_name, last_name, email, student_id, password, role, status) VALUES
-('Admin', 'User', 'admin@gmail.com', 'ADM001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'admin', 'active'),
-('John', 'Doe', 'john@gmail.com', 'STU001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'student', 'active'),
-('Jane', 'Smith', 'jane@gmail.com', 'STU002', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'student', 'active'),
-('Librarian', 'Staff', 'librarian@gmail.com', 'LIB001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'librarian', 'active');
+-- ── Users ─────────────────────────────────────────────────────────────────────
+-- Password for all accounts: password123
+-- ON DUPLICATE KEY UPDATE ensures existing rows get the correct password/role
+-- even if this file is imported on a machine that already has old credentials.
 
--- Insert Sample Books
+INSERT INTO users (first_name, last_name, email, student_id, password, role, status) VALUES
+('Admin',      'User',  'admin@gmail.com',      'ADM001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'admin',     'active'),
+('John',       'Doe',   'john@gmail.com',        'STU001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'student',   'active'),
+('Jane',       'Smith', 'jane@gmail.com',        'STU002', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'student',   'active'),
+('Librarian',  'Staff', 'librarian@gmail.com',   'LIB001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'librarian', 'active')
+ON DUPLICATE KEY UPDATE
+    password   = VALUES(password),
+    role       = VALUES(role),
+    status     = VALUES(status),
+    student_id = VALUES(student_id);
+
+-- ── Books ─────────────────────────────────────────────────────────────────────
+
 INSERT INTO books (title, author, category, available) VALUES
-('Harry Potter', 'J.K. Rowling', 'Fantasy', 1),
-('The Hobbit', 'J.R.R. Tolkien', 'Fantasy', 0),
-('Clean Code', 'Robert Martin', 'Programming', 1),
-('Data Structures', 'Mark Allen', 'Education', 1),
-('The Great Gatsby', 'F. Scott Fitzgerald', 'Fantasy', 1),
-('Python Crash Course', 'Eric Matthes', 'Programming', 1),
-('Design Patterns', 'Gang of Four', 'Programming', 0),
-('Muna Madan', 'Laxmi Prasad Devkota', 'Nepali Literature', 1),
-('Amar Nepalese', 'Dharanidhar Koirala', 'Nepali Classic', 1),
-('Matasya', 'Rammohan Adhikari', 'Nepali Literature', 0),
-('Shyama Swapna', 'Jaya Bhagwati', 'Nepali Literature', 1),
-('Karnali Blues', 'Buddhisagar', 'Nepali Novel', 1),
-('Ramayana (Nepali)', 'Traditional', 'Nepali Classic', 1),
-('The Midnight Jasmine', 'Samrat Upadhyay', 'Nepali Literature', 0),
-('Haruf Sahitya Sangrah', 'Various Authors', 'Nepali Classic', 1),
-('To Kill a Mockingbird', 'Harper Lee', 'Classic Literature', 1),
-('1984', 'George Orwell', 'Dystopian Fiction', 1),
-('Pride and Prejudice', 'Jane Austen', 'Romance', 1),
-('The Catcher in the Rye', 'J.D. Salinger', 'Coming of Age', 0),
-('The Lord of the Rings', 'J.R.R. Tolkien', 'Fantasy', 1),
-('JavaScript: The Good Parts', 'Douglas Crockford', 'Programming', 1),
-('Introduction to Algorithms', 'Cormen et al.', 'Computer Science', 1),
-('The Pragmatic Programmer', 'Hunt and Thomas', 'Programming', 0),
-('Code Complete', 'Steve McConnell', 'Software Engineering', 1),
-('Head First Design Patterns', 'Freeman and Robson', 'Programming', 1);
+('Harry Potter',                'J.K. Rowling',            'Fantasy',            1),
+('The Hobbit',                  'J.R.R. Tolkien',          'Fantasy',            0),
+('Clean Code',                  'Robert Martin',           'Programming',        1),
+('Data Structures',             'Mark Allen',              'Education',          1),
+('The Great Gatsby',            'F. Scott Fitzgerald',     'Classic Literature', 1),
+('Python Crash Course',         'Eric Matthes',            'Programming',        1),
+('Design Patterns',             'Gang of Four',            'Programming',        0),
+('Muna Madan',                  'Laxmi Prasad Devkota',    'Nepali Literature',  1),
+('Amar Nepalese',               'Dharanidhar Koirala',     'Nepali Classic',     1),
+('Matasya',                     'Rammohan Adhikari',       'Nepali Literature',  0),
+('Shyama Swapna',               'Jaya Bhagwati',           'Nepali Literature',  1),
+('Karnali Blues',               'Buddhisagar',             'Nepali Novel',       1),
+('Ramayana (Nepali)',            'Traditional',             'Nepali Classic',     1),
+('The Midnight Jasmine',        'Samrat Upadhyay',         'Nepali Literature',  0),
+('Haruf Sahitya Sangrah',       'Various Authors',         'Nepali Classic',     1),
+('To Kill a Mockingbird',       'Harper Lee',              'Classic Literature', 1),
+('1984',                        'George Orwell',           'Dystopian Fiction',  1),
+('Pride and Prejudice',         'Jane Austen',             'Romance',            1),
+('The Catcher in the Rye',      'J.D. Salinger',           'Coming of Age',      0),
+('The Lord of the Rings',       'J.R.R. Tolkien',          'Fantasy',            1),
+('JavaScript: The Good Parts',  'Douglas Crockford',       'Programming',        1),
+('Introduction to Algorithms',  'Cormen et al.',           'Computer Science',   1),
+('The Pragmatic Programmer',    'Hunt and Thomas',         'Programming',        0),
+('Code Complete',               'Steve McConnell',         'Software Engineering',1),
+('Head First Design Patterns',  'Freeman and Robson',      'Programming',        1)
+ON DUPLICATE KEY UPDATE title = VALUES(title);
