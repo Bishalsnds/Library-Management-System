@@ -135,12 +135,6 @@ $conn->close();
                     <button type="submit" class="login-btn">Login</button>
                 </form>
 
-                <p class="test-creds">
-                    <strong>Test Credentials:</strong><br>
-                    Student: <strong>john@gmail.com</strong> / <strong>password123</strong><br>
-                    Admin: <strong>admin@gmail.com</strong> / <strong>password123</strong>
-                </p>
-
                 <p class="login-footer">
                     Don't have an account? <a href="signup.php" style="color: #667eea; text-decoration: none;">Sign up here</a>
                 </p>

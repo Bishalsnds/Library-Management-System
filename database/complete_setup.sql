@@ -49,10 +49,10 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 -- Insert Sample Users (password: password123)
 INSERT INTO users (first_name, last_name, email, student_id, password, role, status) VALUES
-('Admin', 'User', 'admin@library.com', 'ADMIN001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active'),
-('John', 'Doe', 'john@library.com', 'STU001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'student', 'active'),
-('Jane', 'Smith', 'jane@library.com', 'STU002', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'student', 'active'),
-('Librarian', 'Staff', 'librarian@library.com', 'LIB001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'librarian', 'active');
+('Admin', 'User', 'admin@gmail.com', 'ADM001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'admin', 'active'),
+('John', 'Doe', 'john@gmail.com', 'STU001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'student', 'active'),
+('Jane', 'Smith', 'jane@gmail.com', 'STU002', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'student', 'active'),
+('Librarian', 'Staff', 'librarian@gmail.com', 'LIB001', '$2y$10$FRChCacoThqNnpu7114SBuCv3nuKWJwbYq9KI1rwnwKmzwmV/D4Su', 'librarian', 'active');
 
 -- Insert Sample Books
 INSERT INTO books (title, author, category, available) VALUES
