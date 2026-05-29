@@ -48,15 +48,6 @@ if (!isset($_SESSION['user_id'])) {
         </article>
       </div>
     </section>
-
-    <section class="section">
-      <div class="card">
-        <h2>Database Connected</h2>
-        <p><strong>Database:</strong> LMS fines and warning</p>
-        <p><strong>Connection:</strong> XAMPP MySQL (localhost)</p>
-        <p><strong>Features:</strong> Full CRUD operations (Create, Read, Update, Delete) for all modules. All data persists permanently in your database.</p>
-      </div>
-    </section>
   </main>
 </body>
 </html>

@@ -130,6 +130,7 @@ $conn->close();
                         <label>
                             <input type="checkbox" name="rememberMe"> Remember me
                         </label>
+                        <a href="forgot-password.php" style="color: #667eea; text-decoration: none; font-size: 14px;">Forgot Password?</a>
                     </div>
 
                     <button type="submit" class="login-btn">Login</button>
