@@ -13,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Email is required';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid email format';
+    } elseif (!preg_match('/@gmail\.com$/', $email)) {
+        $error = 'Only @gmail.com email addresses are allowed';
     } elseif (empty($password)) {
         $error = 'Password is required';
     } else {

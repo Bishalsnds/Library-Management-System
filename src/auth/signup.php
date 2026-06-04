@@ -20,8 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Last name is required';
     } elseif (strlen($last_name) < 2) {
         $error = 'Last name must be at least 2 characters';
-    } elseif (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Valid email is required';
+    } elseif (empty($email)) {
+        $error = 'Email is required';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Invalid email format';
+    } elseif (!preg_match('/@gmail\.com$/', $email)) {
+        $error = 'Only @gmail.com email addresses are allowed';
     } elseif (empty($student_id)) {
         $error = 'Student ID is required';
     } elseif (empty($password) || strlen($password) < 6) {
