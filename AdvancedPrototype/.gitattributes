@@ -1,0 +1,5 @@
+* text=auto
+*.cs text diff=csharp
+*.aspx text
+*.config text
+*.sln text eol=crlf
